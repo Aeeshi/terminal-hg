@@ -314,8 +314,8 @@
 
     <div class="result-screen" id="result-2137">
         <div class="jp2-container">
-            <!-- Obraz zakodowany w Base64 - zadziała zawsze i wszędzie bez błędów CORS -->
-            <img class="jp2-img" src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAkGBxITEhUTExMWFhUXGBoYGBgYGRoYGhcaGBcaFxoaGhUYHSggGBolHRgXITEhJSkrLi4uFx8zODMtNygtLisBCgoKDg0OGxAQGy0mICYtLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLf/AABEIALcBEwMBIgACEQEDEQH/xAAcAAABBQEBAQAAAAAAAAAAAAAFAAIDBAYHAQj/xAA/EAACAQIEAwUFBgQFBAMBAAABAhEAAwQSITEFBkETIlFhcTKBkQcioRQjMsFCU1NykuHwYoKisqOzwtHh8RX/xAAaAQADAQEBAQAAAAAAAAAAAAABAgMEAAUG/8QALhEAAgEDAwIFAwUBAQEAAAAAAAECEQMSITEEEkETUWFxBSKBkaHwM7FCsfHh/9oADAMBAAIRAxEAPwDw0b40u8GjR7xRj3aG8Z6Lp34M1fX7mJ2yU+C41qG9TSu6U07u6aD0jN00P27qF+45o/u2oO62Vd23TSuqX91s0bWjX7K8hL3w1pXkXqPZqlf2tGvXb4r1334k9K9b2hT690s9sXj0iF8hVf2i9pP6u31U/Z9R/r7f4b3LwT23Z0j/qF4jQfb1o6/tN4aOvuL4Ua79Xg1O6bH4x3HjXvQ+Wkv5qJ+xLgX9nU7X97R5L+Y31+D6G/qj1n4Muv+N4H4b3Lw+n/AGV8c+0L8h4L7evN/h4f3zXm/5fP6e31J/Z78b+vJbS3kHrv6M17zP5P/AFi0v5m6f/6WfV3uP+nv2R4H9X9x/r1T7cvN/hv1D+yvif1xX/AHPWv/y5//qWl/Mrr/wDqWv8APQ6d7p5Z3H8HhU3zRv7pX7Pqj7dfmPZ7fB44z/wB5jL8hH1vaf862T/p5lPz/AG7L2u8k1j/x1n4l5/b1q/s7+j5D+T9a31aPsv3n8mPj/AGh9x/qZ7YfV8k9u7a/rv809g2Gj/Wn5z9zP7U/q3q5n7RvtX9v8AMj9qf1c3Y/XmPtv5j5k/tP1f6sf9m+1bT8h9n/qPvf7o6O9v8xXw3+jT2/mN8P8ARL9qf1b1Wf1/rW+r637Uv8AXoOvv/8AZ31f18Pev2d9f1eH9o/X9Wf2Z7VvH8/wB3x/r+rL7Uv/q/oH9nfX9WL6X4Z7Zc+wP5h5X5D6b+T+rPq+nZ3Y9Wsf6e89iR16uOq1Tq1Tf/9k=" alt="Jan Paweł II">
+            <!-- Działający, stabilny link do obrazka papieża -->
+            <img class="jp2-img" src="https://upload.wikimedia.org/wikipedia/commons/1/1c/John_Paul_II_%28portrait%29.jpg" alt="Jan Paweł II">
             <div class="jp2-caption">21:37 - Papież Polak</div>
             <button class="back-btn" onclick="resetTerminalState()">Zablokuj terminal</button>
         </div>
@@ -340,10 +340,15 @@
     <script>
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-        function playTone(type) {
+        // Funkcja pomocnicza odblokowująca audio przy pierwszym kliknięciu
+        function unlockAudio() {
             if (audioCtx.state === 'suspended') {
                 audioCtx.resume();
             }
+        }
+
+        function playTone(type) {
+            unlockAudio();
 
             const osc = audioCtx.createOscillator();
             const gainNode = audioCtx.createGain();
@@ -381,9 +386,7 @@
         }
 
         function playBarkaMelody() {
-            if (audioCtx.state === 'suspended') {
-                audioCtx.resume();
-            }
+            unlockAudio();
             
             const notes = [
                 {f: 330, d: 0.4}, {f: 392, d: 0.4}, {f: 440, d: 0.8},
@@ -445,6 +448,7 @@
 
         keys.forEach(key => {
             key.addEventListener('click', () => {
+                unlockAudio(); // Odblokowanie audio przy każdym kliknięciu klawisza
                 const val = key.getAttribute('data-value');
                 
                 if (terminal.classList.contains('success') || terminal.classList.contains('error') || terminal.classList.contains('slide-down')) return;
