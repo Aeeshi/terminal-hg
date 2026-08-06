@@ -56,6 +56,7 @@
         .terminal-container.slide-down {
             transform: translateY(120vh) rotate(5deg);
             opacity: 0;
+            pointer-events: none;
         }
 
         .terminal-container::before {
@@ -184,8 +185,8 @@
             align-items: center;
             opacity: 0;
             pointer-events: none;
-            transition: opacity 0.8s ease 0.4s;
-            z-index: 5;
+            transition: opacity 0.5s ease;
+            z-index: 100;
             padding: 20px;
             text-align: center;
         }
@@ -260,7 +261,7 @@
             max-width: 500px;
             box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
             transform: scale(0.8);
-            transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
         .result-screen.active .message-card {
@@ -275,6 +276,7 @@
         }
 
         .message-card p {
+            content: '';
             color: var(--text-color);
             font-size: 1.1rem;
             line-height: 1.6;
@@ -285,11 +287,14 @@
             background: transparent;
             border: 1px solid var(--primary-glow);
             color: var(--primary-glow);
-            padding: 10px 25px;
+            padding: 12px 30px;
             border-radius: 12px;
             cursor: pointer;
             font-weight: bold;
+            font-size: 1rem;
             transition: all 0.2s ease;
+            position: relative;
+            z-index: 101;
         }
 
         .back-btn:hover {
@@ -360,10 +365,14 @@
     <script>
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         
-        // Deklaracja 3 plików audio
         const barkaAudio = new Audio('barka.mp3');
-        const alanAudio1 = new Audio('alan.mp3'); // Piosenka dla 19012002
-        const martaAudio2 = new Audio('marta.mp3'); // Piosenka dla 30042008
+        const martaAudio1 = new Audio('marta1.mp3');
+        const martaAudio2 = new Audio('marta2.mp3');
+
+        // Ustawienie zapętlenia/wsparcia dla audio
+        [barkaAudio, martaAudio1, martaAudio2].forEach(audio => {
+            audio.preload = 'auto';
+        });
 
         function unlockAudio() {
             if (audioCtx.state === 'suspended') {
@@ -380,7 +389,6 @@
 
         function playTone(type) {
             unlockAudio();
-
             const osc = audioCtx.createOscillator();
             const gainNode = audioCtx.createGain();
             
@@ -508,14 +516,21 @@
                     terminal.classList.add('slide-down');
                     document.getElementById(targetResultId).classList.add('active');
 
-                    stopAllMusic(); // Zapewnia, że gra tylko jedna muzyka naraz
+                    stopAllMusic();
 
+                    let activeAudio = null;
                     if (enteredPin === "2137") {
-                        barkaAudio.play().catch(e => console.log("Błąd odtwarzania audio:", e));
+                        activeAudio = barkaAudio;
                     } else if (enteredPin === "19012002") {
-                        martaAudio1.play().catch(e => console.log("Błąd odtwarzania audio:", e));
+                        activeAudio = martaAudio1;
                     } else if (enteredPin === "30042008") {
-                        martaAudio2.play().catch(e => console.log("Błąd odtwarzania audio:", e));
+                        activeAudio = martaAudio2;
+                    }
+
+                    if (activeAudio) {
+                        activeAudio.play().catch(e => {
+                            console.log("Autoplay zablokowany przez przeglądarkę lub brak pliku mp3:", e);
+                        });
                     }
                 }, 800);
             } else {
@@ -543,7 +558,7 @@
         }
 
         function resetTerminalState() {
-            stopAllMusic(); // Zatrzymuje piosenki przy powrocie do terminala
+            stopAllMusic();
             document.querySelectorAll('.result-screen').forEach(screen => {
                 screen.classList.remove('active');
             });
