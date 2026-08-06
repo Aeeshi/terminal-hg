@@ -128,8 +128,6 @@
             justify-content: center;
             transition: all 0.15s ease;
             user-select: none;
-            position: relative;
-            overflow: hidden;
         }
 
         .key:hover {
@@ -138,7 +136,7 @@
             box-shadow: 0 0 15px rgba(0, 243, 255, 0.15);
         }
 
-        .key:active, .key.clicked {
+        .key:active {
             background: rgba(0, 243, 255, 0.2);
             transform: scale(0.92);
             box-shadow: 0 0 20px var(--primary-glow);
@@ -238,12 +236,6 @@
             font-weight: bold;
             text-shadow: 0 0 15px rgba(255, 255, 255, 0.9), 0 0 30px #ff0055;
             letter-spacing: 2px;
-            animation: textPulse 0.3s infinite alternate;
-        }
-
-        @keyframes textPulse {
-            0% { transform: scale(1); }
-            100% { transform: scale(1.05); }
         }
 
         @keyframes floatUp {
@@ -331,9 +323,9 @@
             <div class="key" data-value="7">7</div>
             <div class="key" data-value="8">8</div>
             <div class="key" data-value="9">9</div>
-            <div class="key" data-value="C" style="font-size: 1rem; color: #ff0055;">C</div>
+            <div class="key" data-value="C" style="color: #ff0055;">C</div>
             <div class="key" data-value="0">0</div>
-            <div class="key" data-value="B" style="font-size: 1rem; color: #00f3ff;">←</div>
+            <div class="key" data-value="B" style="color: #00f3ff;">←</div>
         </div>
     </div>
 
@@ -355,133 +347,37 @@
 
     <div class="result-screen" id="result-30042008">
         <div class="message-card" style="border-color: #ff0055; box-shadow: 0 0 30px rgba(255, 0, 85, 0.3);">
-            <h1 style="color: #ff0055; text-shadow: 0 0 10px rgba(255, 0, 85, 0.5);">30.04.2008</h1>
+            <h1 style="color: #ff0055;">30.04.2008</h1>
             <p>Ta data jest w pełni dedykowana Tobie. Kiedykolwiek przychodzi mi do głowy, jest to przypomnienie o tym, jak niezwykle uroczą osobą jesteś – wnosząc tyle ciepła, wdzięku i blasku w świat wokół Ciebie. Dziękuję, że jesteś tak wspaniała.</p>
-            <button class="back-btn" style="border-color: #ff0055; color: #ff0055;" onmouseover="this.style.background='#ff0055'; this.style.color='#05050a'" onmouseout="this.style.background='transparent'; this.style.color='#ff0055'" onclick="resetTerminalState()">Zablokuj terminal</button>
+            <button class="back-btn" style="border-color: #ff0055; color: #ff0055;" onclick="resetTerminalState()">Zablokuj terminal</button>
         </div>
     </div>
 
     <script>
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        
-        const barkaAudio = new Audio('barka.mp3');
-        const martaAudio1 = new Audio('marta1.mp3');
-        const martaAudio2 = new Audio('marta2.mp3');
-
-        [barkaAudio, martaAudio1, martaAudio2].forEach(audio => {
-            audio.preload = 'auto';
-        });
-
-        function unlockAudio() {
-            if (audioCtx.state === 'suspended') {
-                audioCtx.resume();
-            }
-        }
-
-        function stopAllMusic() {
-            [barkaAudio, martaAudio1, martaAudio2].forEach(audio => {
-                audio.pause();
-                audio.currentTime = 0;
-            });
-        }
-
-        function playTone(type) {
-            unlockAudio();
-            const osc = audioCtx.createOscillator();
-            const gainNode = audioCtx.createGain();
-            
-            osc.connect(gainNode);
-            gainNode.connect(audioCtx.destination);
-
-            let freq = 440;
-            let duration = 0.08;
-            let waveType = 'sine';
-
-            if (type === 'click') {
-                freq = 600;
-                waveType = 'triangle';
-            } else if (type === 'delete') {
-                freq = 300;
-                waveType = 'sawtooth';
-            } else if (type === 'success') {
-                playChimeSequence([523.25, 659.25, 783.99, 1046.50]);
-                return;
-            } else if (type === 'error') {
-                freq = 150;
-                waveType = 'sawtooth';
-                duration = 0.3;
-            }
-
-            osc.type = waveType;
-            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-            
-            gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
-
-            osc.start();
-            osc.stop(audioCtx.currentTime + duration);
-        }
-
-        function playChimeSequence(frequencies) {
-            frequencies.forEach((freq, index) => {
-                setTimeout(() => {
-                    const osc = audioCtx.createOscillator();
-                    const gainNode = audioCtx.createGain();
-                    osc.connect(gainNode);
-                    gainNode.connect(audioCtx.destination);
-                    
-                    osc.type = 'sine';
-                    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-                    gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
-                    gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.15);
-                    
-                    osc.start();
-                    osc.stop(audioCtx.currentTime + 0.15);
-                }, index * 80);
-            });
-        }
-
-        const VALID_PINS = {
-            "2137": "result-2137",
-            "19012002": "result-19012002",
-            "30042008": "result-30042008"
-        };
-        
+        let currentAudio = null;
         let enteredPin = "";
         
         const terminal = document.getElementById('terminal');
         const statusText = document.getElementById('status-text');
         const dots = document.querySelectorAll('.dot');
-        const keys = document.querySelectorAll('.key');
 
-        keys.forEach(key => {
+        document.querySelectorAll('.key').forEach(key => {
             key.addEventListener('click', () => {
-                unlockAudio();
                 const val = key.getAttribute('data-value');
-                
                 if (terminal.classList.contains('success') || terminal.classList.contains('error') || terminal.classList.contains('slide-down')) return;
 
                 if (val === 'C') {
-                    resetPin();
-                    playTone('delete');
+                    enteredPin = "";
                 } else if (val === 'B') {
-                    if (enteredPin.length > 0) {
-                        enteredPin = enteredPin.slice(0, -1);
-                        updateDots();
-                        playTone('delete');
-                    }
+                    enteredPin = enteredPin.slice(0, -1);
                 } else {
-                    if (enteredPin.length < 8) {
-                        enteredPin += val;
-                        updateDots();
-                        playTone('click');
+                    if (enteredPin.length < 8) enteredPin += val;
+                }
 
-                        if (enteredPin === "2137") {
-                            validatePin();
-                        } else if (enteredPin.length === 8) {
-                            validatePin();
-                        }
-                    }
+                updateDots();
+
+                if (enteredPin === "2137" || enteredPin.length === 8) {
+                    validatePin();
                 }
             });
         });
@@ -492,84 +388,65 @@
                     dot.style.display = 'inline-block';
                     dot.classList.add('active');
                 } else {
-                    if (idx < 4) {
-                        dot.style.display = 'inline-block';
-                        dot.classList.remove('active');
-                    } else {
-                        dot.style.display = enteredPin.length > 4 ? 'inline-block' : 'none';
-                        dot.classList.remove('active');
-                    }
+                    dot.style.display = (idx < 4 || enteredPin.length > 4) ? 'inline-block' : 'none';
+                    dot.classList.remove('active');
                 }
             });
         }
 
         function validatePin() {
-            if (VALID_PINS[enteredPin]) {
-                const targetResultId = VALID_PINS[enteredPin];
+            const map = {
+                "2137": { id: "result-2137", audio: "barka.mp3" },
+                "19012002": { id: "result-19012002", audio: "marta1.mp3" },
+                "30042008": { id: "result-30042008", audio: "marta2.mp3" }
+            };
+
+            if (map[enteredPin]) {
+                const target = map[enteredPin];
                 terminal.classList.add('success');
                 statusText.innerText = "Dostęp przyznany";
-                playTone('success');
                 
-                // 1. Najpierw uruchamiamy zjazd terminala w dół
+                setTimeout(() => terminal.classList.add('slide-down'), 400);
+
                 setTimeout(() => {
-                    terminal.classList.add('slide-down');
-                }, 400);
-
-                // 2. Dopiero po zakończeniu animacji terminala (800ms) pokazujemy ekran wynikowy i odpalamy muzykę
-                setTimeout(() => {
-                    document.getElementById(targetResultId).classList.add('active');
-
-                    stopAllMusic();
-
-                    let activeAudio = null;
-                    if (enteredPin === "2137") {
-                        activeAudio = barkaAudio;
-                    } else if (enteredPin === "19012002") {
-                        activeAudio = martaAudio1;
-                    } else if (enteredPin === "30042008") {
-                        activeAudio = martaAudio2;
+                    document.getElementById(target.id).classList.add('active');
+                    
+                    if (currentAudio) {
+                        currentAudio.pause();
+                        currentAudio = null;
                     }
 
-                    if (activeAudio) {
-                        activeAudio.play().catch(e => {
-                            console.log("Autoplay zablokowany przez przeglądarkę:", e);
-                        });
-                    }
+                    currentAudio = new Audio(target.audio);
+                    currentAudio.play().catch(err => {
+                        console.error("Błąd odtwarzania pliku:", target.audio, err);
+                    });
                 }, 1200);
 
             } else {
-                if (enteredPin.length === 8 || (enteredPin.length === 4 && enteredPin !== "2137")) {
-                    triggerError();
-                }
+                terminal.classList.add('error');
+                statusText.innerText = "Błędny PIN";
+
+                setTimeout(() => {
+                    terminal.classList.remove('error');
+                    statusText.innerText = "Wprowadź kod PIN";
+                    enteredPin = "";
+                    updateDots();
+                }, 800);
             }
         }
 
-        function triggerError() {
-            terminal.classList.add('error');
-            statusText.innerText = "Błędny PIN";
-            playTone('error');
-
-            setTimeout(() => {
-                terminal.classList.remove('error');
-                statusText.innerText = "Wprowadź kod PIN";
-                resetPin();
-            }, 800);
-        }
-
-        function resetPin() {
-            enteredPin = "";
-            updateDots();
-        }
-
         function resetTerminalState() {
-            stopAllMusic();
-            document.querySelectorAll('.result-screen').forEach(screen => {
-                screen.classList.remove('active');
-            });
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+                currentAudio = null;
+            }
 
+            document.querySelectorAll('.result-screen').forEach(s => s.classList.remove('active'));
             terminal.classList.remove('slide-down', 'success', 'error');
             statusText.innerText = "Wprowadź kod PIN";
-            resetPin();
+            enteredPin = "";
+            updateDots();
         }
     </script>
 </body>
