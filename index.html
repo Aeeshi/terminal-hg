@@ -243,6 +243,59 @@
             100% { transform: translateY(-15px); }
         }
 
+        /* Styl Koperty / Przycisk Otwierania */
+        .envelope-wrapper {
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            transition: transform 0.3s ease;
+        }
+
+        .envelope-wrapper:hover {
+            transform: scale(1.05);
+        }
+
+        .envelope {
+            width: 180px;
+            height: 120px;
+            background: #1e1e3f;
+            border: 2px solid var(--primary-glow);
+            border-radius: 8px;
+            position: relative;
+            box-shadow: 0 0 25px rgba(0, 243, 255, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .envelope::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            border-left: 90px solid transparent;
+            border-right: 90px solid transparent;
+            border-top: 65px solid rgba(0, 243, 255, 0.4);
+            transform-origin: top;
+            transition: transform 0.5s ease;
+        }
+
+        .envelope-wrapper.open .envelope::before {
+            transform: rotateX(180deg);
+        }
+
+        .envelope-text {
+            color: var(--primary-glow);
+            font-size: 0.9rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            text-shadow: 0 0 8px rgba(0, 243, 255, 0.6);
+        }
+
+        /* Karta wiadomości ukryta w kopercie */
         .message-card {
             background: var(--panel-bg);
             backdrop-filter: blur(20px);
@@ -252,12 +305,17 @@
             padding: 40px;
             max-width: 500px;
             box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
-            transform: scale(0.8);
-            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: absolute;
+            transform: translateY(50px) scale(0.5);
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        .result-screen.active .message-card {
-            transform: scale(1);
+        .result-screen.active .message-card.show {
+            transform: translateY(0) scale(1);
+            opacity: 1;
+            pointer-events: auto;
         }
 
         .message-card h1 {
@@ -329,6 +387,7 @@
         </div>
     </div>
 
+    <!-- Wynik dla 2137 (bez zmian - od razu) -->
     <div class="result-screen" id="result-2137">
         <div class="jp2-container">
             <img class="jp2-img" src="jp2.jpg" alt="Jan Paweł II">
@@ -337,16 +396,26 @@
         </div>
     </div>
 
+    <!-- Wynik dla 19012002 z kopertą -->
     <div class="result-screen" id="result-19012002">
-        <div class="message-card">
+        <div class="envelope-wrapper" id="env-19012002" onclick="openEnvelope('19012002', 'marta1.mp3')">
+            <div class="envelope"></div>
+            <div class="envelope-text">Otwórz list</div>
+        </div>
+        <div class="message-card" id="card-19012002">
             <h1>19.01.2002</h1>
             <p>Za każdym razem, gdy nadchodzi ten dzień, stanowi on wspaniałe przypomnienie o chwili, w której pojawiłeś się na świecie. Oglądając się za siebie, chcę żebyś wiedział, jak bardzo jestem Ci wdzięczny za Twoją drogę, Twoją obecność i za wszystko, co wnosisz. Dziękuję, że po prostu jesteś.</p>
             <button class="back-btn" onclick="resetTerminalState()">Zablokuj terminal</button>
         </div>
     </div>
 
+    <!-- Wynik dla 30042008 z kopertą -->
     <div class="result-screen" id="result-30042008">
-        <div class="message-card" style="border-color: #ff0055; box-shadow: 0 0 30px rgba(255, 0, 85, 0.3);">
+        <div class="envelope-wrapper" id="env-30042008" onclick="openEnvelope('30042008', 'marta2.mp3')">
+            <div class="envelope" style="border-color: #ff0055; box-shadow: 0 0 25px rgba(255, 0, 85, 0.3);"></div>
+            <div class="envelope-text" style="color: #ff0055; text-shadow: 0 0 8px rgba(255, 0, 85, 0.6);">Otwórz list</div>
+        </div>
+        <div class="message-card" id="card-30042008" style="border-color: #ff0055; box-shadow: 0 0 30px rgba(255, 0, 85, 0.3);">
             <h1 style="color: #ff0055;">30.04.2008</h1>
             <p>Ta data jest w pełni dedykowana Tobie. Kiedykolwiek przychodzi mi do głowy, jest to przypomnienie o tym, jak niezwykle uroczą osobą jesteś – wnosząc tyle ciepła, wdzięku i blasku w świat wokół Ciebie. Dziękuję, że jesteś tak wspaniała.</p>
             <button class="back-btn" style="border-color: #ff0055; color: #ff0055;" onclick="resetTerminalState()">Zablokuj terminal</button>
@@ -354,6 +423,48 @@
     </div>
 
     <script>
+        // Syntezator Dźwięków Klawiatury (Web Audio API)
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playKeySound(type) {
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            let freq = 600;
+            let duration = 0.05;
+            let wave = 'triangle';
+
+            if (type === 'click') {
+                freq = 700;
+                wave = 'sine';
+            } else if (type === 'delete') {
+                freq = 350;
+                wave = 'sawtooth';
+                duration = 0.08;
+            } else if (type === 'error') {
+                freq = 150;
+                wave = 'sawtooth';
+                duration = 0.25;
+            } else if (type === 'success') {
+                freq = 880;
+                wave = 'sine';
+                duration = 0.15;
+            }
+
+            osc.type = wave;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        }
+
         const bgAudio = new Audio();
         bgAudio.loop = false;
 
@@ -370,10 +481,15 @@
 
                 if (val === 'C') {
                     enteredPin = "";
+                    playKeySound('delete');
                 } else if (val === 'B') {
                     enteredPin = enteredPin.slice(0, -1);
+                    playKeySound('delete');
                 } else {
-                    if (enteredPin.length < 8) enteredPin += val;
+                    if (enteredPin.length < 8) {
+                        enteredPin += val;
+                        playKeySound('click');
+                    }
                 }
 
                 updateDots();
@@ -398,32 +514,31 @@
 
         function validatePin() {
             const map = {
-                "2137": { id: "result-2137", audio: "barka.mp3" },
-                "19012002": { id: "result-19012002", audio: "marta1.mp3" },
-                "30042008": { id: "result-30042008", audio: "marta2.mp3" }
+                "2137": "result-2137",
+                "19012002": "result-19012002",
+                "30042008": "result-30042008"
             };
 
             if (map[enteredPin]) {
-                const target = map[enteredPin];
-                
-                // OD RAZU uruchamiamy odtwarzanie w momencie kliknięcia (zachowujemy kontekst użytkownika)
-                bgAudio.src = target.audio;
-                bgAudio.play().catch(err => {
-                    console.error("Autoplay zablokowany przez przeglądarkę:", err);
-                });
-
+                const targetId = map[enteredPin];
                 terminal.classList.add('success');
                 statusText.innerText = "Dostęp przyznany";
+                playKeySound('success');
                 
                 setTimeout(() => terminal.classList.add('slide-down'), 400);
 
                 setTimeout(() => {
-                    document.getElementById(target.id).classList.add('active');
+                    document.getElementById(targetId).classList.add('active');
+                    if (enteredPin === "2137") {
+                        bgAudio.src = "barka.mp3";
+                        bgAudio.play().catch(e => console.log(e));
+                    }
                 }, 1200);
 
             } else {
                 terminal.classList.add('error');
                 statusText.innerText = "Błędny PIN";
+                playKeySound('error');
 
                 setTimeout(() => {
                     terminal.classList.remove('error');
@@ -434,9 +549,36 @@
             }
         }
 
+        // Funkcja obsługująca kliknięcie koperty (100% pewny start dźwięku od użytkownika)
+        function openEnvelope(dateKey, audioFile) {
+            const wrapper = document.getElementById('env-' + dateKey);
+            const card = document.getElementById('card-' + dateKey);
+
+            wrapper.classList.add('open');
+            
+            // Płynne schowanie koperty i wysunięcie karty
+            setTimeout(() => {
+                wrapper.style.display = 'none';
+                card.classList.add('show');
+            }, 400);
+
+            // Odpalenie muzyki bezpośrednio z akcji użytkownika
+            bgAudio.src = audioFile;
+            bgAudio.play().catch(err => {
+                console.error("Błąd odtwarzania:", err);
+            });
+        }
+
         function resetTerminalState() {
             bgAudio.pause();
             bgAudio.currentTime = 0;
+
+            // Reset kopert do stanu początkowego
+            document.querySelectorAll('.envelope-wrapper').forEach(w => {
+                w.classList.remove('open');
+                w.style.display = 'flex';
+            });
+            document.querySelectorAll('.message-card').forEach(c => c.classList.remove('show'));
 
             document.querySelectorAll('.result-screen').forEach(s => s.classList.remove('active'));
             terminal.classList.remove('slide-down', 'success', 'error');
