@@ -314,7 +314,7 @@
 
     <div class="result-screen" id="result-2137">
         <div class="jp2-container">
-            <!-- Ładowanie Twojego lokalnego pliku zdjęcia -->
+            <!-- Lokalny plik zdjęcia -->
             <img class="jp2-img" src="jp2.jpg" alt="Jan Paweł II">
             <div class="jp2-caption">21:37 - Papież Polak</div>
             <button class="back-btn" onclick="resetTerminalState()">Zablokuj terminal</button>
@@ -338,8 +338,74 @@
     </div>
 
     <script>
-        // Przygotowanie Twojego lokalnego pliku MP3 z muzyką
+        // Inicjalizacja kontekstu audio przeglądarki do generowania dźwięków kliknięć
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        // Lokalny plik MP3 z muzyką
         const barkaAudio = new Audio('barka.mp3');
+
+        function unlockAudio() {
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function playTone(type) {
+            unlockAudio();
+
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            let freq = 440;
+            let duration = 0.08;
+            let waveType = 'sine';
+
+            if (type === 'click') {
+                freq = 600;
+                waveType = 'triangle';
+            } else if (type === 'delete') {
+                freq = 300;
+                waveType = 'sawtooth';
+            } else if (type === 'success') {
+                playChimeSequence([523.25, 659.25, 783.99, 1046.50]);
+                return;
+            } else if (type === 'error') {
+                freq = 150;
+                waveType = 'sawtooth';
+                duration = 0.3;
+            }
+
+            osc.type = waveType;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            
+            gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        }
+
+        function playChimeSequence(frequencies) {
+            frequencies.forEach((freq, index) => {
+                setTimeout(() => {
+                    const osc = audioCtx.createOscillator();
+                    const gainNode = audioCtx.createGain();
+                    osc.connect(gainNode);
+                    gainNode.connect(audioCtx.destination);
+                    
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                    gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.15);
+                    
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.15);
+                }, index * 80);
+            });
+        }
 
         const VALID_PINS = {
             "2137": "result-2137",
@@ -356,21 +422,25 @@
 
         keys.forEach(key => {
             key.addEventListener('click', () => {
+                unlockAudio();
                 const val = key.getAttribute('data-value');
                 
                 if (terminal.classList.contains('success') || terminal.classList.contains('error') || terminal.classList.contains('slide-down')) return;
 
                 if (val === 'C') {
                     resetPin();
+                    playTone('delete');
                 } else if (val === 'B') {
                     if (enteredPin.length > 0) {
                         enteredPin = enteredPin.slice(0, -1);
                         updateDots();
+                        playTone('delete');
                     }
                 } else {
                     if (enteredPin.length < 8) {
                         enteredPin += val;
                         updateDots();
+                        playTone('click');
 
                         if (enteredPin === "2137") {
                             validatePin();
@@ -404,6 +474,7 @@
                 const targetResultId = VALID_PINS[enteredPin];
                 terminal.classList.add('success');
                 statusText.innerText = "Dostęp przyznany";
+                playTone('success');
                 
                 setTimeout(() => {
                     terminal.classList.add('slide-down');
@@ -424,6 +495,7 @@
         function triggerError() {
             terminal.classList.add('error');
             statusText.innerText = "Błędny PIN";
+            playTone('error');
 
             setTimeout(() => {
                 terminal.classList.remove('error');
@@ -438,7 +510,7 @@
         }
 
         function resetTerminalState() {
-            barkaAudio.pause(); // Zatrzymuje muzykę po powrocie do terminala
+            barkaAudio.pause();
             document.querySelectorAll('.result-screen').forEach(screen => {
                 screen.classList.remove('active');
             });
