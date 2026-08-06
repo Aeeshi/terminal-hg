@@ -276,7 +276,6 @@
         }
 
         .message-card p {
-            content: '';
             color: var(--text-color);
             font-size: 1.1rem;
             line-height: 1.6;
@@ -369,7 +368,6 @@
         const martaAudio1 = new Audio('marta1.mp3');
         const martaAudio2 = new Audio('marta2.mp3');
 
-        // Ustawienie zapętlenia/wsparcia dla audio
         [barkaAudio, martaAudio1, martaAudio2].forEach(audio => {
             audio.preload = 'auto';
         });
@@ -512,8 +510,13 @@
                 statusText.innerText = "Dostęp przyznany";
                 playTone('success');
                 
+                // 1. Najpierw uruchamiamy zjazd terminala w dół
                 setTimeout(() => {
                     terminal.classList.add('slide-down');
+                }, 400);
+
+                // 2. Dopiero po zakończeniu animacji terminala (800ms) pokazujemy ekran wynikowy i odpalamy muzykę
+                setTimeout(() => {
                     document.getElementById(targetResultId).classList.add('active');
 
                     stopAllMusic();
@@ -529,10 +532,11 @@
 
                     if (activeAudio) {
                         activeAudio.play().catch(e => {
-                            console.log("Autoplay zablokowany przez przeglądarkę lub brak pliku mp3:", e);
+                            console.log("Autoplay zablokowany przez przeglądarkę:", e);
                         });
                     }
-                }, 800);
+                }, 1200);
+
             } else {
                 if (enteredPin.length === 8 || (enteredPin.length === 4 && enteredPin !== "2137")) {
                     triggerError();
