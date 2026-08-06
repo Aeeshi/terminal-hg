@@ -376,7 +376,7 @@
     </div>
 
     <div class="result-screen" id="result-19012002">
-        <div class="envelope-wrapper" id="env-19012002" onclick="openEnvelope('19012002', 'marta1.mp3')">
+        <div class="envelope-wrapper" id="env-19012002" onclick="openEnvelope('19012002', 'alan.mp3')">
             <div class="envelope"></div>
             <div class="envelope-text">Otwórz list</div>
         </div>
@@ -388,7 +388,7 @@
     </div>
 
     <div class="result-screen" id="result-30042008">
-        <div class="envelope-wrapper" id="env-30042008" onclick="openEnvelope('30042008', 'marta2.mp3')">
+        <div class="envelope-wrapper" id="env-30042008" onclick="openEnvelope('30042008', 'marta.mp3')">
             <div class="envelope"></div>
             <div class="envelope-text">Otwórz list</div>
         </div>
@@ -538,7 +538,7 @@
 
             bgAudio.src = audioFile;
             bgAudio.play().catch(err => {
-                console.error("Błąd odtwarzania (sprawdź czy plik istnieje i serwujesz stronę przez serwer):", err);
+                console.error("Błąd odtwarzania:", err);
             });
         }
 
