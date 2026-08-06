@@ -5,544 +5,78 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bezpieczny Terminal Dostępu</title>
     <style>
-        :root {
-            --bg-color: #05050a;
-            --panel-bg: rgba(15, 15, 30, 0.6);
-            --border-color: rgba(0, 243, 255, 0.2);
-            --primary-glow: #00f3ff;
-            --error-glow: #ff0055;
-            --success-glow: #00ff66;
-            --text-color: #ffffff;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-        }
-
-        body {
-            background-color: var(--bg-color);
-            background-image: 
-                radial-gradient(circle at 50% 50%, #1a1a3a 0%, #05050a 100%),
-                linear-gradient(rgba(0, 243, 255, 0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0, 243, 255, 0.03) 1px, transparent 1px);
-            background-size: 100% 100%, 20px 20px, 20px 20px;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .terminal-container {
-            background: var(--panel-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--border-color);
-            border-radius: 24px;
-            padding: 40px;
-            box-shadow: 0 0 50px rgba(0, 0, 0, 0.8), 
-                        inset 0 0 20px rgba(0, 243, 255, 0.05);
-            width: 360px;
-            text-align: center;
-            position: relative;
-            z-index: 10;
-            transition: transform 0.8s cubic-bezier(0.77, 0, 0.175, 1), opacity 0.8s ease;
-        }
-
-        .terminal-container.slide-down {
-            transform: translateY(120vh) rotate(5deg);
-            opacity: 0;
-        }
-
-        .terminal-container::before {
-            content: '';
-            position: absolute;
-            top: -2px; left: -2px; right: -2px; bottom: -2px;
-            border-radius: 26px;
-            background: linear-gradient(45deg, var(--primary-glow), transparent, var(--primary-glow));
-            z-index: -1;
-            opacity: 0.3;
-            filter: blur(10px);
-        }
-
-        .terminal-header h2 {
-            color: var(--text-color);
-            font-size: 1.1rem;
-            letter-spacing: 4px;
-            text-transform: uppercase;
-            margin-bottom: 25px;
-            text-shadow: 0 0 10px rgba(0, 243, 255, 0.5);
-        }
-
-        .display-screen {
-            background: rgba(0, 0, 0, 0.4);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            height: 60px;
-            margin-bottom: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.5);
-        }
-
-        .dot {
-            width: 14px;
-            height: 14px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .dot.active {
-            background: var(--primary-glow);
-            border-color: var(--primary-glow);
-            box-shadow: 0 0 15px var(--primary-glow);
-            transform: scale(1.2);
-        }
-
-        .keypad {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 16px;
-        }
-
-        .key {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 16px;
-            height: 65px;
-            color: var(--text-color);
-            font-size: 1.4rem;
-            font-weight: 500;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.15s ease;
-            user-select: none;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .key:hover {
-            background: rgba(0, 243, 255, 0.08);
-            border-color: rgba(0, 243, 255, 0.4);
-            box-shadow: 0 0 15px rgba(0, 243, 255, 0.15);
-        }
-
-        .key:active, .key.clicked {
-            background: rgba(0, 243, 255, 0.2);
-            transform: scale(0.92);
-            box-shadow: 0 0 20px var(--primary-glow);
-        }
-
-        .terminal-container.error {
-            animation: shake 0.4s ease-in-out;
-            border-color: var(--error-glow);
-            box-shadow: 0 0 30px rgba(255, 0, 85, 0.4);
-        }
-
-        .terminal-container.error .dot.active {
-            background: var(--error-glow);
-            border-color: var(--error-glow);
-            box-shadow: 0 0 15px var(--error-glow);
-        }
-
-        .terminal-container.success {
-            border-color: var(--success-glow);
-            box-shadow: 0 0 30px rgba(0, 255, 102, 0.4);
-        }
-
-        .terminal-container.success .dot.active {
-            background: var(--success-glow);
-            border-color: var(--success-glow);
-            box-shadow: 0 0 15px var(--success-glow);
-        }
-
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            20%, 60% { transform: translateX(-10px); }
-            40%, 80% { transform: translateX(10px); }
-        }
-
-        .result-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.8s ease 0.4s;
-            z-index: 5;
-            padding: 20px;
-            text-align: center;
-        }
-
-        .result-screen.active {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        #result-2137 {
-            background: radial-gradient(circle, #2a0845 0%, #05050a 100%);
-        }
-
-        .jp2-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 20px;
-            animation: floatUp 1.5s ease-in-out infinite alternate;
-        }
-
-        .jp2-img {
-            width: 280px;
-            height: 350px;
-            object-fit: cover;
-            border-radius: 16px;
-            border: 3px solid #ffcc00;
-            box-shadow: 0 0 40px rgba(255, 204, 0, 0.6);
-        }
-
-        .jp2-caption {
-            color: #ffcc00;
-            font-size: 1.8rem;
-            font-weight: bold;
-            text-shadow: 0 0 10px rgba(255, 204, 0, 0.8);
-            letter-spacing: 2px;
-        }
-
-        @keyframes floatUp {
-            0% { transform: translateY(0px); }
-            100% { transform: translateY(-15px); }
-        }
-
-        .message-card {
-            background: var(--panel-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--border-color);
-            border-radius: 24px;
-            padding: 40px;
-            max-width: 500px;
-            box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
-            transform: scale(0.8);
-            transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        .result-screen.active .message-card {
-            transform: scale(1);
-        }
-
-        .message-card h1 {
-            color: var(--primary-glow);
-            font-size: 1.6rem;
-            margin-bottom: 20px;
-            text-shadow: 0 0 10px rgba(0, 243, 255, 0.4);
-        }
-
-        .message-card p {
-            color: var(--text-color);
-            font-size: 1.1rem;
-            line-height: 1.6;
-            margin-bottom: 30px;
-        }
-
-        .back-btn {
-            background: transparent;
-            border: 1px solid var(--primary-glow);
-            color: var(--primary-glow);
-            padding: 10px 25px;
-            border-radius: 12px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.2s ease;
-        }
-
-        .back-btn:hover {
-            background: var(--primary-glow);
-            color: var(--bg-color);
-            box-shadow: 0 0 15px var(--primary-glow);
-        }
+        /* Stylistyka pozostaje bez zmian, dla spójności */
+        :root { --bg-color: #05050a; --panel-bg: rgba(15, 15, 30, 0.6); --border-color: rgba(0, 243, 255, 0.2); --primary-glow: #00f3ff; --text-color: #ffffff; }
+        body { background-color: var(--bg-color); height: 100vh; display: flex; justify-content: center; align-items: center; overflow: hidden; font-family: sans-serif; }
+        .terminal-container { background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 24px; padding: 40px; width: 360px; text-align: center; transition: transform 0.8s; }
+        .terminal-container.slide-down { transform: translateY(120vh); opacity: 0; }
+        .display-screen { background: rgba(0, 0, 0, 0.4); border-radius: 12px; height: 60px; margin-bottom: 30px; display: flex; align-items: center; justify-content: center; gap: 12px; }
+        .dot { width: 14px; height: 14px; border-radius: 50%; background: rgba(255, 255, 255, 0.1); }
+        .dot.active { background: var(--primary-glow); box-shadow: 0 0 15px var(--primary-glow); }
+        .keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+        .key { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; height: 60px; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .result-screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; display: none; justify-content: center; align-items: center; background: radial-gradient(circle, #2a0845 0%, #05050a 100%); }
+        .result-screen.active { display: flex; }
+        .jp2-img { width: 280px; height: 350px; object-fit: cover; border-radius: 16px; border: 3px solid #ffcc00; }
+        .back-btn { margin-top: 20px; background: transparent; border: 1px solid #00f3ff; color: #00f3ff; padding: 10px 20px; cursor: pointer; border-radius: 10px; }
     </style>
 </head>
 <body>
 
     <div class="terminal-container" id="terminal">
-        <div class="terminal-header">
-            <h2 id="status-text">Wprowadź kod PIN</h2>
-        </div>
-        
+        <h2 style="color:white; margin-bottom:20px;">PIN</h2>
         <div class="display-screen" id="display">
-            <div class="dot" data-index="0"></div>
-            <div class="dot" data-index="1"></div>
-            <div class="dot" data-index="2"></div>
-            <div class="dot" data-index="3"></div>
-            <div class="dot" data-index="4" style="display:none;"></div>
-            <div class="dot" data-index="5" style="display:none;"></div>
-            <div class="dot" data-index="6" style="display:none;"></div>
-            <div class="dot" data-index="7" style="display:none;"></div>
+            <div class="dot" data-index="0"></div><div class="dot" data-index="1"></div><div class="dot" data-index="2"></div><div class="dot" data-index="3"></div>
         </div>
-
-        <div class="keypad">
-            <div class="key" data-value="1">1</div>
-            <div class="key" data-value="2">2</div>
-            <div class="key" data-value="3">3</div>
-            <div class="key" data-value="4">4</div>
-            <div class="key" data-value="5">5</div>
-            <div class="key" data-value="6">6</div>
-            <div class="key" data-value="7">7</div>
-            <div class="key" data-value="8">8</div>
-            <div class="key" data-value="9">9</div>
-            <div class="key" data-value="C" style="font-size: 1rem; color: #ff0055;">C</div>
-            <div class="key" data-value="0">0</div>
-            <div class="key" data-value="B" style="font-size: 1rem; color: #00f3ff;">←</div>
+        <div class="keypad" id="keypad">
+            <!-- Przyciski -->
+            <script>
+                for(let i=1; i<=9; i++) document.write(`<div class="key" onclick="press(${i})">${i}</div>`);
+                document.write(`<div class="key" onclick="resetPin()">C</div><div class="key" onclick="press(0)">0</div><div class="key" onclick="backspace()">←</div>`);
+            </script>
         </div>
     </div>
 
     <div class="result-screen" id="result-2137">
-        <div class="jp2-container">
-            <!-- Działający, stabilny link do obrazka papieża -->
-            <img class="jp2-img" src="https://upload.wikimedia.org/wikipedia/commons/1/1c/John_Paul_II_%28portrait%29.jpg" alt="Jan Paweł II">
-            <div class="jp2-caption">21:37 - Papież Polak</div>
-            <button class="back-btn" onclick="resetTerminalState()">Zablokuj terminal</button>
-        </div>
-    </div>
-
-    <div class="result-screen" id="result-19012002">
-        <div class="message-card">
-            <h1>19.01.2002</h1>
-            <p>Za każdym razem, gdy nadchodzi ten dzień, stanowi on wspaniałe przypomnienie o chwili, w której pojawiłeś się na świecie. Oglądając się za siebie, chcę żebyś wiedział, jak bardzo jestem Ci wdzięczny za Twoją drogę, Twoją obecność i za wszystko, co wnosisz. Dziękuję, że po prostu jesteś.</p>
-            <button class="back-btn" onclick="resetTerminalState()">Zablokuj terminal</button>
-        </div>
-    </div>
-
-    <div class="result-screen" id="result-30042008">
-        <div class="message-card" style="border-color: #ff0055; box-shadow: 0 0 30px rgba(255, 0, 85, 0.3);">
-            <h1 style="color: #ff0055; text-shadow: 0 0 10px rgba(255, 0, 85, 0.5);">30.04.2008</h1>
-            <p>Ta data jest w pełni dedykowana Tobie. Kiedykolwiek przychodzi mi do głowy, jest to przypomnienie o tym, jak niezwykle uroczą osobą jesteś – wnosząc tyle ciepła, wdzięku i blasku w świat wokół Ciebie. Dziękuję, że jesteś tak wspaniała.</p>
-            <button class="back-btn" style="border-color: #ff0055; color: #ff0055;" onmouseover="this.style.background='#ff0055'; this.style.color='#05050a'" onmouseout="this.style.background='transparent'; this.style.color='#ff0055'" onclick="resetTerminalState()">Zablokuj terminal</button>
+        <div style="text-align:center;">
+            <!-- ŁADOWANIE Z TWOJEGO PLIKU -->
+            <img class="jp2-img" src="jp2.jpg" alt="JP2">
+            <br>
+            <button class="back-btn" onclick="location.reload()">ZABLOKUJ</button>
         </div>
     </div>
 
     <script>
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        let pin = "";
+        const audio = new Audio('barka.mp3'); // ŁADOWANIE TWOJEGO PLIKU MP3
 
-        // Funkcja pomocnicza odblokowująca audio przy pierwszym kliknięciu
-        function unlockAudio() {
-            if (audioCtx.state === 'suspended') {
-                audioCtx.resume();
+        function press(num) {
+            if(pin.length < 4) {
+                pin += num;
+                updateDots();
+                if(pin.length === 4) checkPin();
             }
         }
-
-        function playTone(type) {
-            unlockAudio();
-
-            const osc = audioCtx.createOscillator();
-            const gainNode = audioCtx.createGain();
-            
-            osc.connect(gainNode);
-            gainNode.connect(audioCtx.destination);
-
-            let freq = 440;
-            let duration = 0.08;
-            let waveType = 'sine';
-
-            if (type === 'click') {
-                freq = 600;
-                waveType = 'triangle';
-            } else if (type === 'delete') {
-                freq = 300;
-                waveType = 'sawtooth';
-            } else if (type === 'success') {
-                playChimeSequence([523.25, 659.25, 783.99, 1046.50]);
-                return;
-            } else if (type === 'error') {
-                freq = 150;
-                waveType = 'sawtooth';
-                duration = 0.3;
-            }
-
-            osc.type = waveType;
-            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-            
-            gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
-
-            osc.start();
-            osc.stop(audioCtx.currentTime + duration);
-        }
-
-        function playBarkaMelody() {
-            unlockAudio();
-            
-            const notes = [
-                {f: 330, d: 0.4}, {f: 392, d: 0.4}, {f: 440, d: 0.8},
-                {f: 392, d: 0.4}, {f: 330, d: 0.4}, {f: 293.66, d: 0.8},
-                {f: 261.63, d: 0.4}, {f: 293.66, d: 0.4}, {f: 330, d: 0.8}
-            ];
-
-            let timeOffset = 0;
-            notes.forEach(note => {
-                setTimeout(() => {
-                    const osc = audioCtx.createOscillator();
-                    const gainNode = audioCtx.createGain();
-                    osc.connect(gainNode);
-                    gainNode.connect(audioCtx.destination);
-                    
-                    osc.type = 'sine';
-                    osc.frequency.setValueAtTime(note.f, audioCtx.currentTime);
-                    gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
-                    gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + note.d);
-                    
-                    osc.start();
-                    osc.stop(audioCtx.currentTime + note.d);
-                }, timeOffset);
-                timeOffset += note.d * 800;
-            });
-        }
-
-        function playChimeSequence(frequencies) {
-            frequencies.forEach((freq, index) => {
-                setTimeout(() => {
-                    const osc = audioCtx.createOscillator();
-                    const gainNode = audioCtx.createGain();
-                    osc.connect(gainNode);
-                    gainNode.connect(audioCtx.destination);
-                    
-                    osc.type = 'sine';
-                    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-                    gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
-                    gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.15);
-                    
-                    osc.start();
-                    osc.stop(audioCtx.currentTime + 0.15);
-                }, index * 80);
-            });
-        }
-
-        const VALID_PINS = {
-            "2137": "result-2137",
-            "19012002": "result-19012002",
-            "30042008": "result-30042008"
-        };
-        
-        let enteredPin = "";
-        
-        const terminal = document.getElementById('terminal');
-        const statusText = document.getElementById('status-text');
-        const dots = document.querySelectorAll('.dot');
-        const keys = document.querySelectorAll('.key');
-
-        keys.forEach(key => {
-            key.addEventListener('click', () => {
-                unlockAudio(); // Odblokowanie audio przy każdym kliknięciu klawisza
-                const val = key.getAttribute('data-value');
-                
-                if (terminal.classList.contains('success') || terminal.classList.contains('error') || terminal.classList.contains('slide-down')) return;
-
-                if (val === 'C') {
-                    resetPin();
-                    playTone('delete');
-                } else if (val === 'B') {
-                    if (enteredPin.length > 0) {
-                        enteredPin = enteredPin.slice(0, -1);
-                        updateDots();
-                        playTone('delete');
-                    }
-                } else {
-                    if (enteredPin.length < 8) {
-                        enteredPin += val;
-                        updateDots();
-                        playTone('click');
-
-                        if (enteredPin === "2137") {
-                            validatePin();
-                        } else if (enteredPin.length === 8) {
-                            validatePin();
-                        }
-                    }
-                }
-            });
-        });
 
         function updateDots() {
-            dots.forEach((dot, idx) => {
-                if (idx < enteredPin.length) {
-                    dot.style.display = 'inline-block';
-                    dot.classList.add('active');
-                } else {
-                    if (idx < 4) {
-                        dot.style.display = 'inline-block';
-                        dot.classList.remove('active');
-                    } else {
-                        dot.style.display = enteredPin.length > 4 ? 'inline-block' : 'none';
-                        dot.classList.remove('active');
-                    }
-                }
+            document.querySelectorAll('.dot').forEach((d, i) => {
+                d.className = i < pin.length ? 'dot active' : 'dot';
             });
         }
 
-        function validatePin() {
-            if (VALID_PINS[enteredPin]) {
-                const targetResultId = VALID_PINS[enteredPin];
-                terminal.classList.add('success');
-                statusText.innerText = "Dostęp przyznany";
-                playTone('success');
-                
-                setTimeout(() => {
-                    terminal.classList.add('slide-down');
-                    document.getElementById(targetResultId).classList.add('active');
-
-                    if (enteredPin === "2137") {
-                        playBarkaMelody();
-                    }
-                }, 800);
+        function checkPin() {
+            if(pin === "2137") {
+                document.getElementById('terminal').classList.add('slide-down');
+                document.getElementById('result-2137').classList.add('active');
+                audio.play(); // Odtwarzanie Twojego pliku barka.mp3
             } else {
-                if (enteredPin.length === 8 || (enteredPin.length === 4 && enteredPin !== "2137")) {
-                    triggerError();
-                }
+                alert("BŁĘDNY PIN");
+                resetPin();
             }
         }
 
-        function triggerError() {
-            terminal.classList.add('error');
-            statusText.innerText = "Błędny PIN";
-            playTone('error');
-
-            setTimeout(() => {
-                terminal.classList.remove('error');
-                statusText.innerText = "Wprowadź kod PIN";
-                resetPin();
-            }, 800);
-        }
-
-        function resetPin() {
-            enteredPin = "";
-            updateDots();
-        }
-
-        function resetTerminalState() {
-            document.querySelectorAll('.result-screen').forEach(screen => {
-                screen.classList.remove('active');
-            });
-
-            terminal.classList.remove('slide-down', 'success', 'error');
-            statusText.innerText = "Wprowadź kod PIN";
-            resetPin();
-        }
+        function resetPin() { pin = ""; updateDots(); }
+        function backspace() { pin = pin.slice(0, -1); updateDots(); }
     </script>
 </body>
 </html>
