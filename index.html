@@ -146,7 +146,6 @@
             box-shadow: 0 0 20px var(--primary-glow);
         }
 
-        /* Glitch Effect dla błędnego PINu */
         .terminal-container.error {
             animation: glitchAnim 0.4s ease-in-out;
             border-color: var(--error-glow);
@@ -179,7 +178,6 @@
             box-shadow: 0 0 15px var(--success-glow);
         }
 
-        /* Ekran Skanera Linii Papilarnych */
         .scanner-screen {
             position: fixed;
             top: 0; left: 0; width: 100vw; height: 100vh;
@@ -254,7 +252,6 @@
             text-shadow: 0 0 10px rgba(0, 243, 255, 0.5);
         }
 
-        /* Wyniki i Koperty */
         .result-screen {
             position: fixed;
             top: 0; left: 0;
@@ -413,6 +410,7 @@
             line-height: 1.6;
             margin-bottom: 30px;
             min-height: 80px;
+            white-space: pre-wrap; /* KLUCZOWE: zachowuje spacje i entery */
         }
 
         .back-btn {
@@ -475,7 +473,6 @@
             100% { transform: translateY(105vh) translateX(-20px) rotate(360deg); opacity: 0; }
         }
 
-        /* Iskierki na klawiaturze */
         .sparkle {
             position: absolute;
             width: 6px;
@@ -527,7 +524,6 @@
         </div>
     </div>
 
-    <!-- Skaner linii papilarnych -->
     <div class="scanner-screen" id="scannerScreen">
         <div class="scanner-box" id="scannerBox">
             <div class="scanner-beam"></div>
@@ -628,7 +624,6 @@
         const scannerBox = document.getElementById('scannerBox');
         const scannerText = document.getElementById('scannerText');
 
-        // Generowanie iskier przy kliknięciu klawiatury
         document.querySelectorAll('.key').forEach(key => {
             key.addEventListener('click', (e) => {
                 createSparkles(e.clientX, e.clientY);
@@ -706,7 +701,6 @@
                         bgAudio.src = "barka.mp3";
                         bgAudio.play().catch(e => console.log(e));
                     } else {
-                        // Pokaż skaner linii papilarnych dla dat urodzenia
                         scannerScreen.classList.add('active');
                     }
                 }, 1200);
@@ -725,7 +719,6 @@
             }
         }
 
-        // Obsługa skanera linii papilarnych (przytrzymanie)
         let scanTimer = null;
 
         function startScanning() {
@@ -789,7 +782,6 @@
             });
         }
 
-        // Efekt pisania tekstu (Typewriter)
         function typeWriterEffect(elementId, text) {
             const el = document.getElementById(elementId);
             el.innerText = "";
