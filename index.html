@@ -354,7 +354,9 @@
     </div>
 
     <script>
-        let currentAudio = null;
+        const bgAudio = new Audio();
+        bgAudio.loop = false;
+
         let enteredPin = "";
         
         const terminal = document.getElementById('terminal');
@@ -403,6 +405,13 @@
 
             if (map[enteredPin]) {
                 const target = map[enteredPin];
+                
+                // OD RAZU uruchamiamy odtwarzanie w momencie kliknięcia (zachowujemy kontekst użytkownika)
+                bgAudio.src = target.audio;
+                bgAudio.play().catch(err => {
+                    console.error("Autoplay zablokowany przez przeglądarkę:", err);
+                });
+
                 terminal.classList.add('success');
                 statusText.innerText = "Dostęp przyznany";
                 
@@ -410,16 +419,6 @@
 
                 setTimeout(() => {
                     document.getElementById(target.id).classList.add('active');
-                    
-                    if (currentAudio) {
-                        currentAudio.pause();
-                        currentAudio = null;
-                    }
-
-                    currentAudio = new Audio(target.audio);
-                    currentAudio.play().catch(err => {
-                        console.error("Błąd odtwarzania pliku:", target.audio, err);
-                    });
                 }, 1200);
 
             } else {
@@ -436,11 +435,8 @@
         }
 
         function resetTerminalState() {
-            if (currentAudio) {
-                currentAudio.pause();
-                currentAudio.currentTime = 0;
-                currentAudio = null;
-            }
+            bgAudio.pause();
+            bgAudio.currentTime = 0;
 
             document.querySelectorAll('.result-screen').forEach(s => s.classList.remove('active'));
             terminal.classList.remove('slide-down', 'success', 'error');
