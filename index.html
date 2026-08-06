@@ -195,7 +195,6 @@
             pointer-events: auto;
         }
 
-        /* Dyskotekowe tło dla 2137 */
         #result-2137 {
             animation: discoBg 4s infinite linear;
         }
@@ -216,7 +215,6 @@
             animation: floatUp 1.5s ease-in-out infinite alternate;
         }
 
-        /* Dyskotekowe mruganie ramki i kolory zdjęcia */
         .jp2-img {
             width: 280px;
             height: 350px;
@@ -337,7 +335,6 @@
 
     <div class="result-screen" id="result-2137">
         <div class="jp2-container">
-            <!-- Lokalny plik zdjęcia z efektami stroboskopowymi -->
             <img class="jp2-img" src="jp2.jpg" alt="Jan Paweł II">
             <div class="jp2-caption">21:37 - PARTY TIME</div>
             <button class="back-btn" onclick="resetTerminalState()" style="border-color: #fff; color: #fff;">Zablokuj terminal</button>
@@ -362,12 +359,23 @@
 
     <script>
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        // Deklaracja 3 plików audio
         const barkaAudio = new Audio('barka.mp3');
+        const alanAudio1 = new Audio('alan.mp3'); // Piosenka dla 19012002
+        const martaAudio2 = new Audio('marta.mp3'); // Piosenka dla 30042008
 
         function unlockAudio() {
             if (audioCtx.state === 'suspended') {
                 audioCtx.resume();
             }
+        }
+
+        function stopAllMusic() {
+            [barkaAudio, martaAudio1, martaAudio2].forEach(audio => {
+                audio.pause();
+                audio.currentTime = 0;
+            });
         }
 
         function playTone(type) {
@@ -500,9 +508,14 @@
                     terminal.classList.add('slide-down');
                     document.getElementById(targetResultId).classList.add('active');
 
+                    stopAllMusic(); // Zapewnia, że gra tylko jedna muzyka naraz
+
                     if (enteredPin === "2137") {
-                        barkaAudio.currentTime = 0;
                         barkaAudio.play().catch(e => console.log("Błąd odtwarzania audio:", e));
+                    } else if (enteredPin === "19012002") {
+                        martaAudio1.play().catch(e => console.log("Błąd odtwarzania audio:", e));
+                    } else if (enteredPin === "30042008") {
+                        martaAudio2.play().catch(e => console.log("Błąd odtwarzania audio:", e));
                     }
                 }, 800);
             } else {
@@ -530,7 +543,7 @@
         }
 
         function resetTerminalState() {
-            barkaAudio.pause();
+            stopAllMusic(); // Zatrzymuje piosenki przy powrocie do terminala
             document.querySelectorAll('.result-screen').forEach(screen => {
                 screen.classList.remove('active');
             });
