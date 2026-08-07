@@ -37,7 +37,6 @@
             position: relative;
         }
 
-        /* Overlay do białego błysku */
         #flash-overlay {
             position: fixed;
             top: 0;
@@ -108,7 +107,6 @@
             overflow: hidden;
         }
 
-        /* Styl suwaka głośności */
         .volume-control {
             display: flex;
             align-items: center;
@@ -232,7 +230,6 @@
             box-shadow: 0 0 15px var(--success-glow);
         }
 
-        /* Skaner linii papilarnych */
         .scanner-screen {
             position: fixed;
             top: 0; left: 0; width: 100vw; height: 100vh;
@@ -453,6 +450,9 @@
             pointer-events: none;
             transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         .result-screen.active .message-card.show {
@@ -475,6 +475,8 @@
             margin-bottom: 30px;
             min-height: 80px;
             white-space: pre-wrap;
+            text-align: center;
+            width: 100%;
         }
 
         .back-btn {
@@ -513,7 +515,6 @@
             --card-shadow: rgba(255, 117, 140, 0.4);
         }
 
-        /* Styl dla efektu trzęsienia i serduszka z kawałków */
         .message-card.shake-1 { animation: shakeLevel1 0.3s infinite ease-in-out; }
         .message-card.shake-2 { animation: shakeLevel2 0.2s infinite ease-in-out; }
         .message-card.shake-3 { animation: shakeLevel3 0.1s infinite ease-in-out; }
@@ -651,7 +652,6 @@
             <div class="dot" data-index="7" style="display:none;"></div>
         </div>
 
-        <!-- Suwak głośności muzyki -->
         <div class="volume-control" id="volumeControlContainer">
             <span>Głośność:</span>
             <input type="range" min="0" max="1" step="0.05" value="0.3" class="volume-slider" id="volumeSlider">
@@ -673,7 +673,6 @@
         </div>
     </div>
 
-    <!-- Skaner linii papilarnych -->
     <div class="scanner-screen" id="scannerScreen">
         <div class="scanner-box" id="scannerBox">
             <div class="fingerprint-wrapper">
@@ -839,7 +838,6 @@
                 osc.stop(now + 5);
 
             } else if (effectType === 'glass-shatter') {
-                // Odtwarzanie fizycznego pliku shatter.mp3 z zachowaniem suwaka głośności
                 const shatterAudio = new Audio('shatter.mp3');
                 shatterAudio.volume = bgAudio.volume;
                 shatterAudio.play().catch(err => {
@@ -1104,7 +1102,6 @@
             card.style.opacity = '0';
             card.style.pointerEvents = 'none';
 
-            // Uruchomienie białego błysku na 3 sekundy
             const flash = document.getElementById('flash-overlay');
             flash.style.transition = 'none';
             flash.style.opacity = '1';
@@ -1142,7 +1139,6 @@
                 }
             }
 
-            // Układanie odłamków w serduszko po 3 sekundach
             setTimeout(() => {
                 shards.forEach((shard, index) => {
                     const t = (index / shards.length) * Math.PI * 2;
@@ -1157,7 +1153,6 @@
                 });
             }, 3000);
 
-            // Po ułożeniu odłamków (kolejne 3s), odczekaj dodatkowe 2 sekundy przed pokazaniem serca
             setTimeout(() => {
                 shards.forEach(shard => shard.remove());
                 
@@ -1175,9 +1170,9 @@
 
                     }, 500);
 
-                }, 2000); // Dodatkowe 2 sekundy pauzy
+                }, 2000);
 
-            }, 6000); // 3000ms rozbryzg + 3000ms układanie
+            }, 6000);
         }
 
         function typeWriterEffect(elementId, text) {
