@@ -459,6 +459,83 @@
             --card-shadow: rgba(255, 117, 140, 0.4);
         }
 
+        /* Styl dla efektu trzęsienia i serduszka z kawałków */
+        .message-card.shake-1 { animation: shakeLevel1 0.3s infinite ease-in-out; }
+        .message-card.shake-2 { animation: shakeLevel2 0.2s infinite ease-in-out; }
+        .message-card.shake-3 { animation: shakeLevel3 0.1s infinite ease-in-out; }
+
+        @keyframes shakeLevel1 {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            20% { transform: translate(-3px, 2px) rotate(-1deg); }
+            40% { transform: translate(3px, -2px) rotate(1deg); }
+            60% { transform: translate(-2px, -1px) rotate(0deg); }
+            80% { transform: translate(2px, 3px) rotate(-1deg); }
+            100% { transform: translate(0, 0) rotate(0deg); }
+        }
+
+        @keyframes shakeLevel2 {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            20% { transform: translate(-7px, 5px) rotate(-2deg); }
+            40% { transform: translate(7px, -5px) rotate(2deg); }
+            60% { transform: translate(-5px, -3px) rotate(-1deg); }
+            80% { transform: translate(5px, 6px) rotate(2deg); }
+            100% { transform: translate(0, 0) rotate(0deg); }
+        }
+
+        @keyframes shakeLevel3 {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            20% { transform: translate(-12px, 10px) rotate(-4deg); }
+            40% { transform: translate(12px, -10px) rotate(4deg); }
+            60% { transform: translate(-10px, -6px) rotate(-2deg); }
+            80% { transform: translate(10px, 12px) rotate(3deg); }
+            100% { transform: translate(0, 0) rotate(0deg); }
+        }
+
+        .glass-shard {
+            position: absolute;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.8), rgba(255, 117, 140, 0.5));
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            box-shadow: 0 0 10px rgba(255, 117, 140, 0.6);
+            pointer-events: none;
+            z-index: 150;
+            transition: all 1.5s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .heart-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            z-index: 200;
+            pointer-events: none;
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .heart-container.show {
+            transform: translate(-50%, -50%) scale(1);
+            pointer-events: auto;
+        }
+
+        .beating-heart {
+            font-size: 8rem;
+            color: #ff758c;
+            filter: drop-shadow(0 0 25px #ff758c);
+            user-select: none;
+        }
+
+        .heart-container.beat .beating-heart {
+            animation: heartBeat 0.8s infinite ease-in-out;
+        }
+
+        @keyframes heartBeat {
+            0% { transform: scale(1); }
+            15% { transform: scale(1.25); }
+            30% { transform: scale(1); }
+            45% { transform: scale(1.15); }
+            60% { transform: scale(1); }
+            100% { transform: scale(1); }
+        }
+
         .petals-container {
             position: fixed;
             top: 0; left: 0;
@@ -534,7 +611,7 @@
         </div>
     </div>
 
-    <!-- Skaner z realistycznym, szczegółowym wzorem linii papilarnych SVG -->
+    <!-- Skaner linii papilarnych -->
     <div class="scanner-screen" id="scannerScreen">
         <div class="scanner-box" id="scannerBox">
             <div class="fingerprint-wrapper">
@@ -570,7 +647,7 @@
                         c-7-4.4-9.2-13.4-4.8-20.4c14.7-23.3,23.3-50.8,23.3-80.2C400,176.5,335.5,112,256,112z"/>
                     <path d="M256,152c-57.4,0-104,46.6-104,104c0,21.6,6.3,41.7,17.1,58.8c4.6,7.2,2.3,16.6-4.9,21.2c-7.2,4.6-16.6,2.3-21.2-4.9
                         C130,311.9,122,285,122,256c0-75.1,60.9-136,136-136c75.1,0,136,60.9,136,136c0,29-8,55.9-21.9,78.9c-4.6,7.2-14,9.5-21.2,4.9
-                        c-7-4.6-9.5-14-4.9-21.2c10.8-17.1,17.1-37.2,17.1-58.8C360,198.6,313.4,152,256,152z"/>
+                        c-7.2-4.6-9.5-14-4.9-21.2c10.8-17.1,17.1-37.2,17.1-58.8C360,198.6,313.4,152,256,152z"/>
                     <path d="M256,192c-35.3,0-64,28.7-64,64c0,13.8,4,26.7,11,37.6c4.7,7.4,2.5,17-4.9,21.7c-7.4,4.7-17,2.5-21.7-4.9
                         C168,295.2,162,276.1,162,256c0-53,43-96,96-96c53,0,96,43,96,96c0,20.1-6,39.2-16.6,55.4c-4.7,7.4-14.3,9.6-21.7,4.9
                         c-7.4-4.7-9.6-14.3-4.9-21.7c7-10.9,11-23.8,11-37.6C320,220.7,291.3,192,256,192z"/>
@@ -613,6 +690,9 @@
             <h1>30.04.2008</h1>
             <p id="text-30042008"></p>
             <button class="back-btn" onclick="resetTerminalState()">Zablokuj terminal</button>
+        </div>
+        <div class="heart-container" id="heartContainer">
+            <div class="beating-heart">❤️</div>
         </div>
     </div>
 
@@ -669,12 +749,72 @@
             osc.stop(audioCtx.currentTime + duration);
         }
 
+        // Generator dźwięków syntetycznych (trzęsienie ziemi / tłuczenie szkła)
+        function playSpecialSound(effectType) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const now = audioCtx.currentTime;
+
+            if (effectType === 'earthquake') {
+                // Syntetyczne niskie dudnienie trzęsienia ziemi
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                const filter = audioCtx.createBiquadFilter();
+
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(40, now);
+                osc.frequency.linearRampToValueAtTime(25, now + 5);
+
+                filter.type = 'lowpass';
+                filter.frequency.setValueAtTime(120, now);
+
+                gain.gain.setValueAtTime(0.01, now);
+                gain.gain.linearRampToValueAtTime(0.3, now + 2.5);
+                gain.gain.linearRampToValueAtTime(0.01, now + 5);
+
+                osc.connect(filter);
+                filter.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                osc.start(now);
+                osc.stop(now + 5);
+
+            } else if (effectType === 'glass-shatter') {
+                // Syntetyczny trzask / tłuczone szkło (szum + wysokie częstotliwości)
+                const bufferSize = audioCtx.sampleRate * 0.8;
+                const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = Math.random() * 2 - 1;
+                }
+
+                const noise = audioCtx.createBufferSource();
+                noise.buffer = buffer;
+
+                const filter = audioCtx.createBiquadFilter();
+                filter.type = 'bandpass';
+                filter.frequency.setValueAtTime(2500, now);
+                filter.Q.setValueAtTime(3, now);
+
+                const gain = audioCtx.createGain();
+                gain.gain.setValueAtTime(0.4, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.8);
+
+                noise.connect(filter);
+                filter.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                noise.start(now);
+                noise.stop(now + 0.8);
+            }
+        }
+
         const bgAudio = new Audio();
         bgAudio.loop = false;
-        bgAudio.volume = 0.1; // Ustawienie głośności na 10%
+        bgAudio.volume = 0.3; // Ustawienie głośności na 30%
 
         let enteredPin = "";
         let pendingTargetId = "";
+        let martaTimeout = null;
         
         const terminal = document.getElementById('terminal');
         const statusText = document.getElementById('status-text');
@@ -851,6 +991,30 @@
                 } else if (dateKey === '30042008') {
                     msgText = "Ta data jest w pełni dedykowana Tobie. Kiedykolwiek przychodzi mi do głowy, jest to najpiękniejsze przypomnienie o tym, jak niezwykle uroczą osobą jesteś – wnosząc tyle ciepła, czułości i blasku w każdy mój dzień. Dziękuję, że po prostu jesteś i że tworzysz ze mną to wszystko, co mamy.";
                     startRosePetals();
+                    
+                    // Logika trzęsienia okna Marty po 20 sekundach trwającego przez 5 sekund
+                    martaTimeout = setTimeout(() => {
+                        card.classList.add('shake-1');
+                        playSpecialSound('earthquake');
+
+                        setTimeout(() => {
+                            card.classList.remove('shake-1');
+                            card.classList.add('shake-2');
+                        }, 1500);
+
+                        setTimeout(() => {
+                            card.classList.remove('shake-2');
+                            card.classList.add('shake-3');
+                        }, 3000);
+
+                        // Po 5 sekundach trzęsienia: roztrzaskanie okna i uformowanie serduszka
+                        setTimeout(() => {
+                            card.classList.remove('shake-3');
+                            playSpecialSound('glass-shatter');
+                            shatterCard(card);
+                        }, 5000);
+
+                    }, 20000);
                 }
 
                 typeWriterEffect('text-' + dateKey, msgText);
@@ -860,6 +1024,78 @@
             bgAudio.play().catch(err => {
                 console.error("Błąd odtwarzania:", err);
             });
+        }
+
+        // Funkcja roztrzaskująca okno na kawałki, z których powstaje serce
+        function shatterCard(card) {
+            const rect = card.getBoundingClientRect();
+            const cols = 6;
+            const rows = 6;
+            const shardWidth = rect.width / cols;
+            const shardHeight = rect.height / rows;
+
+            card.style.opacity = '0';
+            card.style.pointerEvents = 'none';
+
+            let shards = [];
+
+            // Docelowe centrum serca względem okna
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    const shard = document.createElement('div');
+                    shard.className = 'glass-shard';
+                    shard.style.width = shardWidth + 'px';
+                    shard.style.height = shardHeight + 'px';
+                    
+                    const startX = rect.left + c * shardWidth;
+                    const startY = rect.top + r * shardHeight;
+                    shard.style.left = startX + 'px';
+                    shard.style.top = startY + 'px';
+                    
+                    document.body.appendChild(shard);
+                    shards.push(shard);
+
+                    // Losowy rozbryzg przy tłuczeniu
+                    const scatterX = (Math.random() - 0.5) * 300;
+                    const scatterY = (Math.random() - 0.5) * 300;
+
+                    setTimeout(() => {
+                        shard.style.transform = `translate(${scatterX}px, ${scatterY}px) rotate(${Math.random() * 360}deg) scale(0.6)`;
+                        shard.style.opacity = '0.7';
+                    }, 50);
+                }
+            }
+
+            // Po 1.5 sekundy kawałki formują serduszko w centrum
+            setTimeout(() => {
+                shards.forEach((shard, index) => {
+                    // Matematyczny wzór parametryczny serca
+                    const t = (index / shards.length) * Math.PI * 2;
+                    const hX = 16 * Math.pow(Math.sin(t), 3);
+                    const hY = -(13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t));
+                    
+                    const targetX = centerX + hX * 10 - shardWidth / 2;
+                    const targetY = centerY + hY * 10 - shardHeight / 2;
+
+                    shard.style.transform = `translate(${targetX - parseFloat(shard.style.left)}px, ${targetY - parseFloat(shard.style.top)}px) scale(0.3) rotate(0deg)`;
+                    shard.style.opacity = '0.9';
+                });
+            }, 1500);
+
+            // Po kolejnych 1.5 sekundach (łącznie 3 sekundy po uformowaniu) włączamy bicie serca
+            setTimeout(() => {
+                shards.forEach(shard => shard.remove());
+                const heartContainer = document.getElementById('heartContainer');
+                heartContainer.classList.add('show');
+                
+                setTimeout(() => {
+                    heartContainer.classList.add('beat');
+                }, 3000); // 3 sekundy po uformowaniu serduszka
+
+            }, 3000);
         }
 
         function typeWriterEffect(elementId, text) {
@@ -911,11 +1147,29 @@
             bgAudio.pause();
             bgAudio.currentTime = 0;
 
+            if (martaTimeout) {
+                clearTimeout(martaTimeout);
+                martaTimeout = null;
+            }
+
             if (petalInterval) {
                 clearInterval(petalInterval);
                 petalInterval = null;
             }
             document.querySelectorAll('.rose-petal').forEach(p => p.remove());
+            document.querySelectorAll('.glass-shard').forEach(s => s.remove());
+
+            const heartContainer = document.getElementById('heartContainer');
+            if (heartContainer) {
+                heartContainer.classList.remove('show', 'beat');
+            }
+
+            const card30 = document.getElementById('card-30042008');
+            if (card30) {
+                card30.classList.remove('shake-1', 'shake-2', 'shake-3');
+                card30.style.opacity = '1';
+                card30.style.pointerEvents = '';
+            }
 
             document.querySelectorAll('.envelope-wrapper').forEach(w => {
                 w.classList.remove('open');
